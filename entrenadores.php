@@ -147,25 +147,62 @@ $stats = [
 <body>
     <div class="page">
         <header class="navbar navbar-expand-md navbar-gym">
-            <div class="container-xl">
-                <a href="index.php" class="navbar-brand d-flex align-items-center">
-                    <span style="color: white; font-weight: 600;">GYM ADMIN</span>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbar-menu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.php"><i class="ti ti-dashboard me-1"></i> Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="membresias.php"><i class="ti ti-cards me-1"></i> Membresías</a></li>
-                        <li class="nav-item"><a class="nav-link" href="socios.php"><i class="ti ti-users me-1"></i> Socios</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="entrenadores.php"><i class="ti ti-run me-1"></i> Entrenadores</a></li>
-                        <li class="nav-item"><a class="nav-link" href="clases.php"><i class="ti ti-calendar me-1"></i> Clases</a></li>
-                        <li class="nav-item"><a class="nav-link" href="reportes.php"><i class="ti ti-chart-bar me-1"></i> Reportes</a></li>
-                    </ul>
-                </div>
-            </div>
-        </header>
+    <div class="container-xl">
+        <a href="index.php" class="navbar-brand d-flex align-items-center">
+            <img src="logo1.png" alt="GYM ADMIN" class="logo-gym me-2">
+            <span style="color: white; font-weight: 600;">GYM ADMIN</span>
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">
+                        <i class="ti ti-dashboard me-1"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="membresias.php">
+                        <i class="ti ti-cards me-1"></i> Membresías
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="socios.php">
+                        <i class="ti ti-users me-1"></i> Socios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="entrenadores.php">
+                        <i class="ti ti-run me-1"></i> Entrenadores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="clases.php">
+                        <i class="ti ti-calendar me-1"></i> Clases
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Pagos.php">
+                        <i class="ti ti-credit-card me-1"></i> Pagos/Caja
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="reportes.php">
+                        <i class="ti ti-chart-bar me-1"></i> Reportes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.php">
+                        <i class="ti ti-logout me-1"></i> Salir
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
 
         <div class="page-wrapper">
             <div class="container-xl mt-4">
