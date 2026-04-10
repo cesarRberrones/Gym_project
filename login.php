@@ -5,10 +5,12 @@ ini_set('display_errors', 1);
 session_start();
 include "conexion.php";
 
-//si está logueado, redirigir según su rol
 if (isset($_SESSION['usuario_id'])) {
     if ($_SESSION['rol'] == 1) {
         header("Location: admin/index.php");
+        exit();
+    } elseif ($_SESSION['rol'] == 2) {
+        header("Location: entrenador/index.php");
         exit();
     } elseif ($_SESSION['rol'] == 3) {
         header("Location: socio/index.php");
@@ -50,15 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 //actualizar último acceso
                 $conn->query("UPDATE usuarios SET ultimo_acceso = NOW() WHERE ID_Usuario = " . $usuario['ID_Usuario']);
                 
-                //redirigir según rol
-                if ($usuario['ID_Rol'] == 1) {
-                    header("Location: admin/index.php");
-                } elseif ($usuario['ID_Rol'] == 3) {
-                    header("Location: socio/index.php");
-                } else {
-                    header("Location: dashboard.php");
-                }
-                exit();
+               //redirigir según rol
+if ($usuario['ID_Rol'] == 1) {
+    header("Location: admin/index.php");
+} elseif ($usuario['ID_Rol'] == 2) {
+    header("Location: entrenador/index.php");
+} elseif ($usuario['ID_Rol'] == 3) {
+    header("Location: socio/index.php");
+} else {
+    header("Location: index.php"); 
+}
+exit();
             } else {
                 $error = "Contraseña incorrecta";
                 $error_tipo = "error";
@@ -205,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     <div class="demo-users">
                         <i class="ti ti-info-circle"></i>
-                            <span>Prueba: admin@gimnasio.com / 123456 .  milkiss@gmail.com / 123456</span>
+                            <span>Prueba: admin@gimnasio.com / 123456 .  milkiss@gmail.com / 123456 . entrenador1@gimnasio.com / 123456</span>
                     </div>
                 </form>
             </div>

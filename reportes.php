@@ -2,6 +2,9 @@
 include "conexion.php";
 session_start();
 
+$tab = isset($_GET['tab']) ? $_GET['tab'] : 'resumen';
+
+// ==================== DATOS PARA PESTAÑA "RESUMEN" ====================
 $ingresos_hoy = 0;
 $ingresos_mes = 0;
 $nuevos_socios = 0;
@@ -9,28 +12,23 @@ $membresias_activas = 0;
 $membresias_vencidas = 0;
 $productos_top = [];
 
-//Ingresos diarios y mensuales
 $res_hoy = $conn->query("SELECT SUM(Monto) as total FROM ventas_pagos WHERE DATE(Fecha_Pago) = CURDATE()");
 if ($res_hoy) $ingresos_hoy = $res_hoy->fetch_assoc()['total'] ?? 0;
 $res_mes = $conn->query("SELECT SUM(Monto) as total FROM ventas_pagos WHERE MONTH(Fecha_Pago) = MONTH(CURDATE()) AND YEAR(Fecha_Pago) = YEAR(CURDATE())");
 if ($res_mes) $ingresos_mes = $res_mes->fetch_assoc()['total'] ?? 0;
 
-//Proyección de ingresos
 $dias_mes_actual = date('t');
 $dia_actual = date('j');
 $proyeccion_mes = ($dia_actual > 0) ? ($ingresos_mes / $dia_actual) * $dias_mes_actual : 0;
 
-//Nuevos socios
 $res_socios = $conn->query("SELECT COUNT(*) as total FROM usuarios WHERE ID_Rol = 3 AND MONTH(Fecha_Registro) = MONTH(CURDATE())");
 if ($res_socios) $nuevos_socios = $res_socios->fetch_assoc()['total'] ?? 0;
 
-//Membresías Activas y Vencidas
 $res_activas = $conn->query("SELECT COUNT(DISTINCT ID_Socio) as total FROM socio_membresia WHERE Fecha_Fin >= CURDATE()");
 if ($res_activas) $membresias_activas = $res_activas->fetch_assoc()['total'] ?? 0;
 $res_vencidas = $conn->query("SELECT COUNT(DISTINCT ID_Socio) as total FROM socio_membresia WHERE Fecha_Fin < CURDATE() AND ID_Socio NOT IN (SELECT ID_Socio FROM socio_membresia WHERE Fecha_Fin >= CURDATE())");
 if ($res_vencidas) $membresias_vencidas = $res_vencidas->fetch_assoc()['total'] ?? 0;
 
-//Productos más vendidos
 $sql_productos = "SELECT p.Nombre, SUM(d.Cantidad) as total_vendido, SUM(d.Cantidad * d.Precio_Unitario) as ingresos_generados 
                   FROM detalle_venta_pos d 
                   JOIN productos p ON d.ID_Producto = p.ID_Producto 
@@ -41,6 +39,33 @@ if ($res_productos) {
     while($row = $res_productos->fetch_assoc()) {
         $productos_top[] = $row;
     }
+}
+
+// ==================== DATOS PARA PESTAÑA "INGRESOS POR FECHA" ====================
+$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m-01');
+$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-t');
+$ingresos_diarios = [];
+$total_ingresos_periodo = 0;
+
+$sql_ingresos = "SELECT DATE(Fecha_Pago) as fecha, SUM(Monto) as total, COUNT(*) as cantidad
+                 FROM ventas_pagos
+                 WHERE Fecha_Pago BETWEEN '$fecha_inicio' AND '$fecha_fin 23:59:59'
+                 GROUP BY DATE(Fecha_Pago)
+                 ORDER BY fecha ASC";
+$result_ingresos = $conn->query($sql_ingresos);
+if ($result_ingresos) {
+    while($row = $result_ingresos->fetch_assoc()) {
+        $ingresos_diarios[] = $row;
+        $total_ingresos_periodo += $row['total'];
+    }
+}
+
+// Preparar datos para la gráfica
+$fechas_grafica = [];
+$montos_grafica = [];
+foreach($ingresos_diarios as $i) {
+    $fechas_grafica[] = date('d/m', strtotime($i['fecha']));
+    $montos_grafica[] = $i['total'];
 }
 ?>
 
@@ -53,66 +78,34 @@ if ($res_productos) {
     <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <link href="css/gym-style.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="page">
         <header class="navbar navbar-expand-md navbar-gym">
-    <div class="container-xl">
-        <a href="index.php" class="navbar-brand d-flex align-items-center">
-            <img src="logo1.png" alt="GYM ADMIN" class="logo-gym me-2">
-            <span style="color: white; font-weight: 600;">GYM ADMIN</span>
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.php">
-                        <i class="ti ti-dashboard me-1"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="membresias.php">
-                        <i class="ti ti-cards me-1"></i> Membresías
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="socios.php">
-                        <i class="ti ti-users me-1"></i> Socios
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="entrenadores.php">
-                        <i class="ti ti-run me-1"></i> Entrenadores
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="clases.php">
-                        <i class="ti ti-calendar me-1"></i> Clases
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="Pagos.php">
-                        <i class="ti ti-credit-card me-1"></i> Pagos/Caja
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="reportes.php">
-                        <i class="ti ti-chart-bar me-1"></i> Reportes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="logout.php">
-                        <i class="ti ti-logout me-1"></i> Salir
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</header>
+            <div class="container-xl">
+                <a href="index.php" class="navbar-brand d-flex align-items-center">
+                    <img src="logo1.png" alt="GYM ADMIN" class="logo-gym me-2">
+                    <span style="color: white; font-weight: 600;">GYM ADMIN</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="index.php"><i class="ti ti-dashboard me-1"></i> Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="membresias.php"><i class="ti ti-cards me-1"></i> Membresías</a></li>
+                        <li class="nav-item"><a class="nav-link" href="socios.php"><i class="ti ti-users me-1"></i> Socios</a></li>
+                        <li class="nav-item"><a class="nav-link" href="entrenadores.php"><i class="ti ti-run me-1"></i> Entrenadores</a></li>
+                        <li class="nav-item"><a class="nav-link" href="evaluaciones.php"><i class="ti ti-heart-rate-monitor me-1"></i> Evaluaciones</a></li>
+                        <li class="nav-item"><a class="nav-link" href="clases.php"><i class="ti ti-calendar me-1"></i> Clases</a></li>
+                        <li class="nav-item"><a class="nav-link" href="Pagos.php"><i class="ti ti-credit-card me-1"></i> Pagos/Caja</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="reportes.php"><i class="ti ti-chart-bar me-1"></i> Reportes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="logout.php"><i class="ti ti-logout me-1"></i> Salir</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
 
         <div class="page-wrapper">
             <div class="container-xl mt-4">
@@ -124,6 +117,22 @@ if ($res_productos) {
                     </div>
                 </div>
 
+                <!-- PESTAÑAS -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo $tab == 'resumen' ? 'active' : ''; ?>" href="?tab=resumen">
+                            <i class="ti ti-dashboard me-1"></i> Resumen General
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo $tab == 'ingresos' ? 'active' : ''; ?>" href="?tab=ingresos">
+                            <i class="ti ti-chart-bar me-1"></i> Ingresos por Fecha
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- ==================== PESTAÑA: RESUMEN GENERAL ==================== -->
+                <?php if ($tab == 'resumen'): ?>
                 <div class="row row-cards mb-4">
                     <div class="col-sm-6 col-lg-3">
                         <div class="card stat-card">
@@ -191,17 +200,12 @@ if ($res_productos) {
                                         </thead>
                                         <tbody>
                                             <?php if(empty($productos_top)): ?>
-                                                <tr><td colspan="3" class="text-center py-4 text-muted">Aún no hay ventas de productos registradas en el sistema.</td></tr>
-                                            <?php else: ?>
+                                                <tr><td colspan="3" class="text-center py-4 text-muted">Aún no hay ventas de productos registradas en el sistema.<?php else: ?>
                                                 <?php foreach($productos_top as $producto): ?>
                                                 <tr>
                                                     <td class="fw-bold"><?php echo htmlspecialchars($producto['Nombre']); ?></td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-blue-lt"><?php echo $producto['total_vendido']; ?></span>
-                                                    </td>
-                                                    <td class="text-end text-success fw-bold">
-                                                        $<?php echo number_format($producto['ingresos_generados'], 2); ?>
-                                                    </td>
+                                                    <td class="text-center"><span class="badge bg-blue-lt"><?php echo $producto['total_vendido']; ?></span></td>
+                                                    <td class="text-end text-success fw-bold">$<?php echo number_format($producto['ingresos_generados'], 2); ?></td>
                                                 </tr>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
@@ -212,12 +216,115 @@ if ($res_productos) {
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <!-- ==================== PESTAÑA: INGRESOS POR FECHA ==================== -->
+                <?php if ($tab == 'ingresos'): ?>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Filtrar por Rango de Fechas</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="GET" action="reportes.php" class="row g-3">
+                            <input type="hidden" name="tab" value="ingresos">
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha Inicio</label>
+                                <input type="date" name="fecha_inicio" class="form-control" value="<?php echo $fecha_inicio; ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha Fin</label>
+                                <input type="date" name="fecha_fin" class="form-control" value="<?php echo $fecha_fin; ?>">
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-guardar w-100">Consultar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tarjetas de resumen del período -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="stat-value">$<?php echo number_format($total_ingresos_periodo, 2); ?></div>
+                                <div class="stat-label">Total de Ingresos</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="stat-value"><?php echo count($ingresos_diarios); ?></div>
+                                <div class="stat-label">Días con Ventas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfica -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Gráfica de Ingresos Diarios</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="ingresosChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabla de ingresos -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Detalle de Ingresos por Día</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter">
+                            <thead>
+                                <tr><th>Fecha</th><th>Cantidad de Ventas</th><th>Monto Total</th> </thead>
+                            <tbody>
+                                <?php if(count($ingresos_diarios) > 0): foreach($ingresos_diarios as $i): ?>
+                                <tr>
+                                    <td><?php echo date('d/m/Y', strtotime($i['fecha'])); ?></td>
+                                    <td><?php echo $i['cantidad']; ?> ventas</td>
+                                    <td>$<?php echo number_format($i['total'], 2); ?></td>
+                                </tr>
+                                <?php endforeach; else: ?>
+                                <tr><td colspan="3" class="text-center">No hay ingresos en este período</td><\/tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+    <script>
+        <?php if ($tab == 'ingresos' && count($ingresos_diarios) > 0): ?>
+        const ctx = document.getElementById('ingresosChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: <?php echo json_encode($fechas_grafica); ?>,
+                datasets: [{
+                    label: 'Ingresos ($)',
+                    data: <?php echo json_encode($montos_grafica); ?>,
+                    borderColor: '#74b816',
+                    backgroundColor: 'rgba(116, 184, 22, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { position: 'top' } }
+            }
+        });
+        <?php endif; ?>
+    </script>
 </body>
 </html>

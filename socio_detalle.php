@@ -327,6 +327,79 @@ $clases = $conn->query($sql_clases);
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Evaluaciones Físicas y Registro de Comidas -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h3 class="card-title">Evaluaciones Físicas y Registro de Comidas</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-tabs" id="evaluacionesTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="evaluaciones-tab" data-bs-toggle="tab" data-bs-target="#evaluaciones" type="button" role="tab">Evaluaciones Físicas</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="comidas-tab" data-bs-toggle="tab" data-bs-target="#comidas" type="button" role="tab">Registro de Comidas</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content mt-3">
+                                    <!-- Pestaña Evaluaciones Físicas -->
+                                    <div class="tab-pane fade show active" id="evaluaciones" role="tabpanel">
+                                        <?php
+                                        $evaluaciones = $conn->query("SELECT * FROM evaluacion_fisica WHERE ID_Socio = $id_socio ORDER BY Fecha_Evaluacion DESC");
+                                        if($evaluaciones->num_rows > 0): ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-vcenter">
+                                                <thead>
+                                                    <tr><th>Fecha</th><th>Peso</th><th>Altura</th><th>IMC</th><th>% Grasa</th><th>Cintura</th><th>Observaciones</th> </thead>
+                                                <tbody>
+                                                <?php while($e = $evaluaciones->fetch_assoc()): ?>
+                                                <tr>
+                                                    <td><?php echo date('d/m/Y', strtotime($e['Fecha_Evaluacion'])); ?></td>
+                                                    <td><?php echo $e['Peso']; ?> kg</td>
+                                                    <td><?php echo $e['Altura']; ?> m</td>
+                                                    <td><?php echo $e['IMC']; ?></td>
+                                                    <td><?php echo $e['Porcentaje_Grasa'] ?? '—'; ?>%</td>
+                                                    <td><?php echo $e['Cintura'] ?? '—'; ?> cm</td>
+                                                    <td><?php echo $e['Observaciones'] ?? '—'; ?></td>
+                                                </tr>
+                                                <?php endwhile; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <?php else: ?>
+                                        <div class="alert alert-info">No hay evaluaciones registradas.</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <!-- Pestaña Registro de Comidas -->
+                                    <div class="tab-pane fade" id="comidas" role="tabpanel">
+                                        <?php
+                                        $comidas = $conn->query("SELECT r.*, a.Nombre as alimento_nombre FROM registro_comidas r INNER JOIN alimentos a ON r.ID_Alimento = a.ID_Alimento WHERE r.ID_Socio = $id_socio ORDER BY r.Fecha DESC LIMIT 20");
+                                        if($comidas->num_rows > 0): ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-vcenter">
+                                                <thead>
+                                                    <tr><th>Fecha</th><th>Alimento</th><th>Gramos</th><th>Calorías</th><th>Comentario</th> </thead>
+                                                <tbody>
+                                                <?php while($c = $comidas->fetch_assoc()): ?>
+                                                <tr>
+                                                    <td><?php echo date('d/m/Y', strtotime($c['Fecha'])); ?></td>
+                                                    <td><?php echo htmlspecialchars($c['alimento_nombre']); ?></td>
+                                                    <td><?php echo $c['Porcion_gramos']; ?> g</td>
+                                                    <td><?php echo round($c['Calorias_totales']); ?> kcal</td>
+                                                    <td><?php echo $c['comentario_entrenador'] ?? '—'; ?></td>
+                                                </tr>
+                                                <?php endwhile; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <?php else: ?>
+                                        <div class="alert alert-info">No hay registro de comidas.</div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

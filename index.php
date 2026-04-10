@@ -86,6 +86,11 @@ if ($result) {
                     <a class="nav-link" href="entrenadores.php">
                         <i class="ti ti-run me-1"></i> Entrenadores
                     </a>
+                <li class="nav-item">
+                     <a class="nav-link" href="evaluaciones.php">
+                    <i class="ti ti-heart-rate-monitor me-1"></i> Evaluaciones
+                  </a>
+                </li>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="clases.php">

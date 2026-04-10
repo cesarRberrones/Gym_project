@@ -61,21 +61,37 @@ $clases = $conn->query($sql_clases);
             <div class="container-xl">
                 <a href="index.php" class="navbar-brand d-flex align-items-center">
                     <img src="../logo1.png" alt="GYM ADMIN" class="logo-gym me-2">
-                    <span style="color: white; font-weight: 600;">GYM ADMIN</span>
+                    <span style="color: white; font-weight: 600;">GYM USER</span>
                 </a>
                 
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <span class="nav-link text-white">
-                            <i class="ti ti-user me-1"></i> <?php echo $_SESSION['usuario_nombre']; ?>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../logout.php">
-                            <i class="ti ti-logout me-1"></i> Salir
-                        </a>
-                    </li>
-                </ul>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="index.php">
+                                <i class="ti ti-home me-1"></i> Mi Perfil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../mi_evaluacion.php">
+                                <i class="ti ti-heart-rate-monitor me-1"></i> Mi Evaluación
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link text-white">
+                                <i class="ti ti-user me-1"></i> <?php echo $_SESSION['usuario_nombre']; ?>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../logout.php">
+                                <i class="ti ti-logout me-1"></i> Salir
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </header>
 
@@ -141,7 +157,7 @@ $clases = $conn->query($sql_clases);
                         </div>
                     </div>
 
-                    <!-- Membresía actual -->
+                    <!-- membresía actual -->
                     <div class="col-md-8">
                         <div class="card">
                             <div class="card-header">
@@ -170,7 +186,7 @@ $clases = $conn->query($sql_clases);
                             </div>
                         </div>
 
-                        <!-- Próximas clases -->
+                        <!-- próximas clases -->
                         <div class="card mt-3">
                             <div class="card-header">
                                 <h3 class="card-title">Mis Próximas Clases</h3>
@@ -182,21 +198,21 @@ $clases = $conn->query($sql_clases);
                                             <th>Clase</th>
                                             <th>Fecha</th>
                                             <th>Hora</th>
-                                        </tr>
+                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php if ($clases->num_rows > 0): ?>
                                             <?php while($clase = $clases->fetch_assoc()): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($clase['Nombre']); ?></td>
-                                                <td><?php echo date('d/m/Y', strtotime($clase['Fecha'])); ?></td>
-                                                <td><?php echo date('H:i', strtotime($clase['Fecha'])); ?></td>
-                                            </tr>
+                                             <tr>
+                                                 <td><?php echo htmlspecialchars($clase['Nombre']); ?></td>
+                                                 <td><?php echo date('d/m/Y', strtotime($clase['Fecha'])); ?></td>
+                                                 <td><?php echo date('H:i', strtotime($clase['Fecha'])); ?></td>
+                                             </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
-                                            <tr>
+                                             <tr>
                                                 <td colspan="3" class="text-center">No tienes clases reservadas</td>
-                                            </tr>
+                                             </tr>
                                         <?php endif; ?>
                                     </tbody>
                                 </table>

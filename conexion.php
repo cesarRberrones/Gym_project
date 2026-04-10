@@ -1,7 +1,7 @@
 <?php
 $host = "localhost";
-$user = "root";
-$pass = "";
+$user = "appuser";
+$pass = "1234";
 $db   = "gym_sistema";
 
 $conn = new mysqli($host, $user, $pass, $db);
